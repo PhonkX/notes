@@ -30,5 +30,25 @@ namespace notes.Storages
         {
             return dbContext.Notes.FirstOrDefault(filter);
         }
+
+        public void AddUser(User user)
+        {
+            dbContext.Users.Add(user);
+        }
+
+        public void AddNote(Note note)
+        {
+            dbContext.Notes.Add(note);
+        }
+
+        public void AddSession(Session session)
+        {
+            dbContext.Sessions.Add(session);
+        }
+
+        public void Save()  // TODO: подумать про то, чтобы обойтись без такого
+        {
+            dbContext.SaveChanges();
+        }
     }
 }

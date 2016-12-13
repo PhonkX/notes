@@ -7,17 +7,18 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
 using notes.Models;
+using notes.Storages;
 
 namespace notes.Controllers
 {
     public class HomeController : Controller
     {
-        private NotesDbContext dbContext;
+        private DatabaseConnector dbConnector;
         private JsonHelper jsonHelper;
 
         public HomeController()
         {
-            dbContext = new NotesDbContext();
+            dbConnector = new DatabaseConnector();
             jsonHelper = new JsonHelper();
         }
 
@@ -49,7 +50,7 @@ namespace notes.Controllers
 
             if (id.HasValue)
             {
-                var note = dbContext.Notes.FirstOrDefault(x => x.NoteId == id);
+                var note = dbConnector.SearchNote(x => x.NoteId == id);
                 if (note == null)
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
@@ -74,11 +75,11 @@ namespace notes.Controllers
                     NoteId = id.Value,
                     CreationDate = DateTime.UtcNow.Ticks
                 };
-                dbContext.Notes.Add(note);
+                dbConnector.AddNote(note);
             }
             else
             {
-                note = dbContext.Notes.FirstOrDefault(x => x.NoteId == id.Value);
+                note = dbConnector.SearchNote(x => x.NoteId == id.Value);
                 if (note == null)
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
@@ -98,7 +99,7 @@ namespace notes.Controllers
             note.Text = notearea;
             note.LastChangeDate = DateTime.UtcNow.Ticks;
 
-            dbContext.SaveChanges();
+            dbConnector.Save();
             return RedirectToAction("Notes", new { @id = id });
             //return RedirectToAction("Notes", Guid.NewGuid());
         }
