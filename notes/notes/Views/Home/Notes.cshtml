@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "Notes";
+}
+
+<h2>TestView</h2>
+<h2>Test page for notes</h2>
+@using (Html.BeginForm("SaveNote", "Home", FormMethod.Post, new Dictionary<string, object> 
+    {
+        ["id"] = "noteform"   
+    })) // TODO: посмотреть, нужна ли будет форма
+{
+    @Html.TextArea("notearea", (string)ViewBag.Text, new Dictionary<string, object>
+    {
+        ["class"] = "note",
+        ["id"] = "notetextarea"
+    })
+    //@Html.TextArea("notearea", new { @class="note"})
+    <div style="clear: both">
+        <input type="hidden" name="id" id="noteid" value="@ViewBag.NoteId">
+        <input type="submit" class="btn btn-default" name="save" value="Save" id="savebutton">
+        @*<input type="button" class="btn btn-default" name="savebutton" id="savebtn" value="Сохранить">*@
+        @*<p>@ViewBag.Note.Text</p>*@
+    </div>
+}
+
