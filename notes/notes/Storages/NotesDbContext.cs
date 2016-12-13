@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data.Entity;
-using System.Linq;
-using System.Web;
+﻿using System.Data.Entity;
+using notes.Models;
 
-namespace notes.Models
+namespace notes.Storages
 {
     public class NotesDbContext: DbContext
     {

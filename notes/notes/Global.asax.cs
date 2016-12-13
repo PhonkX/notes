@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using notes.Models;
+using notes.Storages;
 using Newtonsoft.Json.Converters;
 
 namespace notes

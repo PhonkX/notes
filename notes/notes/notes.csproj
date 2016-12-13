@@ -172,7 +172,7 @@
     <Compile Include="Authentication\CookieHelper.cs" />
     <Compile Include="JsonHelper.cs" />
     <Compile Include="Models\Note.cs" />
-    <Compile Include="Models\NotesDbContext.cs" />
+    <Compile Include="Storages\NotesDbContext.cs" />
     <Compile Include="Models\Session.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
