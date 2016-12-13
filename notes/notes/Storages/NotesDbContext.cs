@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using notes.Models;
 
 namespace notes.Storages
@@ -10,5 +11,22 @@ namespace notes.Storages
         public IDbSet<Session> Sessions { get; set; }
     }
 
-    public class NotesContextInitializer : DropCreateDatabaseIfModelChanges<NotesDbContext> {}
+    public class NotesContextInitializer : DropCreateDatabaseIfModelChanges<NotesDbContext>
+    {
+        protected override void Seed(NotesDbContext context)
+        {
+            base.Seed(context);
+
+            context.Users.Add(
+                new User
+                {
+                    Login = "PhonkX",
+                    Password = "Ololo",
+                    UserId = Guid.NewGuid()
+                }
+            );
+
+            context.SaveChanges();
+        }
+    }
 }

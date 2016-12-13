@@ -13,7 +13,7 @@ namespace notes.Models
 
         public string Login { get; set; }
 
-        public string PasswordHash { get; set; }
+        public string Password{ get; set; } // TODO: поменять потом на PasswordHasd
 
         public Guid UserId { get; set; }
     }

@@ -14,12 +14,12 @@ namespace notes.Controllers
     public class HomeController : Controller
     {
         private DatabaseConnector dbConnector;
-        private JsonHelper jsonHelper;
+        private CookieHelper cookieHelper;
 
         public HomeController()
         {
             dbConnector = new DatabaseConnector();
-            jsonHelper = new JsonHelper();
+            cookieHelper = new CookieHelper();
         }
 
         public ActionResult Index()
@@ -60,7 +60,6 @@ namespace notes.Controllers
             }
 
             return View();
-            // TODO: разбить на два метода - get и post
         }
 
         [HttpPost]
@@ -86,12 +85,6 @@ namespace notes.Controllers
                 }
             }
 
-            //if (text == null)
-            //{
-            //    text = "";
-            //}
-
-            //note.Text = text;
             if (notearea == null)
             {
                 notearea = "";
@@ -101,7 +94,35 @@ namespace notes.Controllers
 
             dbConnector.Save();
             return RedirectToAction("Notes", new { @id = id });
-            //return RedirectToAction("Notes", Guid.NewGuid());
+        }
+
+        public ActionResult AuthPage()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Auth(string login, string password) // TODO: разнести по разным контроллерам
+        {
+            if (String.IsNullOrWhiteSpace(login) || String.IsNullOrWhiteSpace(password))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
+            var user = dbConnector.SearchUser(x => x.Login == login);
+            if (user == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.NotFound); // TODO: подумать, что возвращать (по идее, страницу с надписью о неверных данных)
+            }
+
+            if (user.Password != password)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
+            }
+
+            // TODO: доделать
+
+            return RedirectToAction("Notes");
         }
     }
 }
