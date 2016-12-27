@@ -7,7 +7,7 @@ using notes.Models;
 
 namespace notes.Storages
 {
-    public class DatabaseConnector // TODO: подумать, как унифицировать
+    public class DatabaseConnector // TODO: разнести по разным хранилищам
     {
         private NotesDbContext dbContext;
 
@@ -29,6 +29,11 @@ namespace notes.Storages
         public Note SearchNote(Func<Note, bool> filter)
         {
             return dbContext.Notes.FirstOrDefault(filter);
+        }
+
+        public IEnumerable<Note> SearchNotes(Func<Note, bool> filter) // TODO: подумать, может, объединить методы
+        {
+            return dbContext.Notes.Where(filter); 
         }
 
         public void AddUser(User user)

@@ -6,7 +6,8 @@
 function sendData(area, id, timeout) {
 
     var text = area.value;
-    $.post("/Home/SaveNote", { id: id, notearea: text });
+    var userId = document.getElementById("userid").value;
+    $.post("/Home/SaveNote", { id: id, userId: userId, notearea: text });
     //setTimeout(function() {
     //    var text = area.value;
     //    $.post("/Home/SaveNote", { id: id, notearea: text }, null, "object");

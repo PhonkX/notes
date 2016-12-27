@@ -11,17 +11,23 @@ namespace notes.Authentication
     {
         private DatabaseConnector dbConnector;
 
+        public SessionManager()
+        {
+            dbConnector = new DatabaseConnector();
+        }
+
         public Session CreateSession(Guid userId)
         {
             var session = new Session
             {
-                SessionId = new Guid(),
+                SessionId = Guid.NewGuid(),
                 UserId = userId,
                 CreationDate = DateTime.UtcNow.Ticks,
                 LastRequestDate = DateTime.UtcNow.Ticks
             };
             
             dbConnector.AddSession(session);
+            dbConnector.Save();
 
             return session;
         }

@@ -1,0 +1,17 @@
+﻿
+@{
+    ViewBag.Title = "NotesList";
+}
+
+<h2>NotesList</h2>
+
+@foreach (var note in ViewBag.NotesList)
+{
+    var url = "/Home/Notes?id=" + note.NoteId;
+    var length = Math.Min((int) note.Text.Length, 20);
+    <a href="@url">
+        <div>
+            <p>@note.Text.Substring(0, length)</p>
+        </div>
+    </a>
+}

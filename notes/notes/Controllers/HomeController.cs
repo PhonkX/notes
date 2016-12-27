@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
+using notes.Authentication;
 using notes.Models;
 using notes.Storages;
 
@@ -14,12 +15,14 @@ namespace notes.Controllers
     public class HomeController : Controller
     {
         private DatabaseConnector dbConnector;
-        private CookieHelper cookieHelper;
+        private IAuthenticator authenticator;
+        private SessionManager sessionManager;
 
         public HomeController()
         {
             dbConnector = new DatabaseConnector();
-            cookieHelper = new CookieHelper();
+            authenticator = new Authenticator();
+            sessionManager = new SessionManager();
         }
 
         public ActionResult Index()
@@ -41,16 +44,25 @@ namespace notes.Controllers
             return View();
         }
 
-        [HttpGet]
-        public ActionResult Notes(Guid? id)
+        public ActionResult NotesList(Session session)
         {
+            var notes = dbConnector.SearchNotes(x => x.UserId == session.UserId);
+            ViewBag.NotesList = notes;
+            return View();
+        }
+
+        [HttpGet]
+        public ActionResult Notes(Session session, Guid? id)
+        {
+            var userId = session.UserId;
+
             ViewBag.Message = "Note page.";
-            
+            ViewBag.UserId = userId;
             ViewBag.NoteId = id;
 
             if (id.HasValue)
             {
-                var note = dbConnector.SearchNote(x => x.NoteId == id);
+                var note = dbConnector.SearchNote(x => x.NoteId == id && x.UserId == userId);
                 if (note == null)
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
@@ -63,7 +75,7 @@ namespace notes.Controllers
         }
 
         [HttpPost]
-        public ActionResult SaveNote(Guid? id, string notearea) // TODO: переименовать параметр
+        public ActionResult SaveNote(Guid? id, Guid userId, string notearea) // TODO: переименовать параметр
         {
             Note note;
             if (!id.HasValue)
@@ -72,6 +84,7 @@ namespace notes.Controllers
                 note = new Note
                 {
                     NoteId = id.Value,
+                    UserId = userId,
                     CreationDate = DateTime.UtcNow.Ticks
                 };
                 dbConnector.AddNote(note);
@@ -98,31 +111,37 @@ namespace notes.Controllers
 
         public ActionResult AuthPage()
         {
+            var backUrl = HttpContext.Request.Params["backUrl"];
+
+            ViewBag.BackUrl = backUrl;
+
             return View();
         }
 
         [HttpPost]
-        public ActionResult Auth(string login, string password) // TODO: разнести по разным контроллерам
+        public ActionResult Auth(string login, string password, string backUrl) // TODO: разнести по разным контроллерам
         {
-            if (String.IsNullOrWhiteSpace(login) || String.IsNullOrWhiteSpace(password))
+            var session = authenticator.AuthenticateUser(login, password);
+            if (session == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                return new HttpStatusCodeResult(HttpStatusCode.Unauthorized); // TODO: переделать на возврат страницы
             }
-
-            var user = dbConnector.SearchUser(x => x.Login == login);
-            if (user == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound); // TODO: подумать, что возвращать (по идее, страницу с надписью о неверных данных)
-            }
-
-            if (user.Password != password)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.NotFound);
-            }
-
             // TODO: доделать
+            var cookie = new HttpCookie("SID", session.SessionId.ToString());
+            cookie.Expires = DateTime.UtcNow.AddDays(30);
+            HttpContext.Response.Cookies.Add(cookie); // TODO: вынести добавление кук в CookieHelper
+            return new RedirectResult(backUrl);
+        }
 
-            return RedirectToAction("Notes");
+        protected override void OnException(ExceptionContext filterContext)
+        {
+            var exception = filterContext.Exception;
+            filterContext.ExceptionHandled = true;
+
+            if (exception.GetType() == typeof(AuthenticationErrorException))
+            {
+                filterContext.Result = new RedirectResult("/Home/AuthPage?backUrl=" + filterContext.HttpContext.Request.Path); //TODO: впилить обработку этого параметра (впилить скрытый инпут с этим адресом)
+            }
         }
     }
 }
