@@ -16,13 +16,11 @@ namespace notes.Controllers
     {
         private DatabaseConnector dbConnector;
         private IAuthenticator authenticator;
-        private SessionManager sessionManager;
 
         public HomeController()
         {
             dbConnector = new DatabaseConnector();
             authenticator = new Authenticator();
-            sessionManager = new SessionManager();
         }
 
         public ActionResult Index()
@@ -106,7 +104,7 @@ namespace notes.Controllers
             note.LastChangeDate = DateTime.UtcNow.Ticks;
 
             dbConnector.Save();
-            return RedirectToAction("Notes", new { @id = id });
+            return RedirectToAction("Notes", new {@id = id});
         }
 
         public ActionResult AuthPage()
@@ -131,6 +129,32 @@ namespace notes.Controllers
             cookie.Expires = DateTime.UtcNow.AddDays(30);
             HttpContext.Response.Cookies.Add(cookie); // TODO: вынести добавление кук в CookieHelper
             return new RedirectResult(backUrl);
+        }
+
+        [HttpGet]
+        public ActionResult RegisterPage()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Register(string login, string password)
+        {
+            var user = dbConnector.SearchUser(x => x.Login == login);
+            if (user != null)
+            {
+                return RedirectToAction("RegisterPage");
+            }
+
+            dbConnector.AddUser(
+                new User
+                {
+                    Login = login,
+                    Password = password,
+                    UserId = Guid.NewGuid()
+                });
+
+            return RedirectToAction("Index");
         }
 
         protected override void OnException(ExceptionContext filterContext)
